@@ -1,57 +1,85 @@
-# Python Backend Engineer Take Home Assessment
+Project Structure
 
-## Overview
-This project implements a REST API using FastAPI and PostgreSQL.  
-The service acts as a bridge between a local database and an external API (GitHub), enriching stored data with repository metadata.
+The project follows a simple layered structure to maintain separation of concerns:
 
-## Use Case
-GitHub Task Tracker – tasks are created with GitHub repository references, and repository details such as star count and description are fetched and stored.
+app/ – Application source code
 
-## Assumptions
-- No authentication is required.
-- GitHub public API is available and reliable.
-- Single-user usage.
-- External API failures should not corrupt database state.
+main.py – FastAPI app initialization
 
-## Tech Stack
-- Python 3.10+
-- FastAPI
-- PostgreSQL
-- SQLModel
-- Pydantic
-- Pytest
+routes.py – API endpoint definitions
 
-## API Endpoints
-- POST /tasks – Create task with GitHub repo enrichment
-- GET /tasks/{id} – Fetch task
-- PUT /tasks/{id} – Update task
-- DELETE /tasks/{id} – Delete task
+models.py – Database models
 
-## Database Design
-Single `tasks` table storing task metadata along with GitHub repository details.
+schemas.py – Pydantic request and response schemas
 
-## External API Integration
-GitHub REST API is used to fetch repository information such as stars and description using async HTTP requests.
+db.py – Database connection and session handling
 
-## Error Handling
-- Global exception handler implemented.
-- Graceful handling of database and external API failures.
-- Proper HTTP status codes returned.
+github_service.py – External GitHub API integration logic
 
-## How to Run
-1. Install dependencies:
+tests/ – Pytest-based test cases for API endpoints
 
-python -m pip install -r requirements.txt
+requirements.txt – Project dependencies
 
-2. Ensure PostgreSQL is running and database exists.
-3. Start server:
-python -m uvicorn app.main:app --reload
+.env.example – Example environment variables
 
-4. Open Swagger docs:
-http://127.0.0.1:8000/docs
+README.md – Project documentation
 
-## Testing
-Run tests using:
-pytest -q
-## Notes
-Docker was not used as it was optional. Focus was placed on correctness, validation, testing, and documentation clarity.
+This structure improves maintainability, readability, and testability.
+
+Validation Logic
+
+Request and response validation is handled using Pydantic schemas.
+All incoming request data is validated before processing, ensuring required fields are present and correctly typed.
+
+Response schemas ensure consistent API responses.
+Invalid inputs automatically return appropriate 422 Unprocessable Entity errors.
+
+External API Design
+
+The GitHub REST API is used to fetch repository metadata such as star count and description.
+
+No authentication is used (public GitHub API)
+
+Asynchronous HTTP requests are made using httpx
+
+External API failures are handled gracefully without breaking database integrity
+
+Timeouts and unexpected responses are managed via exception handling
+
+Solution Approach (Data Flow)
+
+POST /tasks
+
+Validate request payload using Pydantic
+
+Call GitHub API to fetch repository details
+
+Enrich task data with GitHub metadata
+
+Store the task in PostgreSQL
+
+Return the stored task as response
+
+GET /tasks/{id}
+
+Fetch task from database and return it
+
+PUT /tasks/{id}
+
+Update task fields and persist changes in database
+
+DELETE /tasks/{id}
+
+Remove task from database
+
+Environment Variables
+
+The project uses environment variables for configuration.
+
+An example file is provided as .env.example containing:
+
+DATABASE_URL
+
+GITHUB_API_BASE
+
+No real credentials are committed to the repository.
