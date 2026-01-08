@@ -1,85 +1,165 @@
-Project Structure
+# Python Backend Engineer Take Home Assessment
 
-The project follows a simple layered structure to maintain separation of concerns:
+## Overview
+This project implements a REST API service using **FastAPI** and **PostgreSQL**.  
+The service acts as a bridge between a local database and an external API (**GitHub**), enriching stored data with repository metadata such as star count and description.
 
-app/ – Application source code
+---
 
-main.py – FastAPI app initialization
+## Problem Understanding & Use Case
 
-routes.py – API endpoint definitions
+### Interpretation
+The goal of this assessment was to build a robust backend service that:
+- Exposes REST APIs using FastAPI
+- Persists data in PostgreSQL
+- Integrates with an external API
+- Applies strict request and response validation
+- Includes automated testing and clear documentation
 
-models.py – Database models
+### Use Case
+**GitHub Task Tracker**  
+Users can create tasks linked to GitHub repositories.  
+When a task is created, repository details are fetched from GitHub and stored along with the task.
 
-schemas.py – Pydantic request and response schemas
+### Assumptions
+- No user authentication is required.
+- GitHub public API is available and reliable.
+- The application is designed for single-user usage.
+- External API failures should not corrupt database state.
 
-db.py – Database connection and session handling
+---
 
-github_service.py – External GitHub API integration logic
+## Tech Stack
+- Python 3.10+
+- FastAPI
+- PostgreSQL
+- SQLModel
+- Pydantic
+- Pytest
 
-tests/ – Pytest-based test cases for API endpoints
+---
 
-requirements.txt – Project dependencies
+## API Endpoints
+- **POST /tasks** – Create a task with GitHub repository enrichment
+- **GET /tasks/{id}** – Fetch a task by ID
+- **PUT /tasks/{id}** – Update an existing task
+- **DELETE /tasks/{id}** – Delete a task
 
-.env.example – Example environment variables
+---
 
-README.md – Project documentation
+## Project Structure
 
-This structure improves maintainability, readability, and testability.
+The project follows a layered structure to ensure separation of concerns:
 
-Validation Logic
+- `app/`
+  - `main.py` – FastAPI application entry point
+  - `routes.py` – API route definitions
+  - `models.py` – Database models
+  - `schemas.py` – Pydantic request and response schemas
+  - `db.py` – Database connection and session handling
+  - `github_service.py` – External GitHub API integration
+- `tests/` – Pytest-based test cases
+- `requirements.txt` – Project dependencies
+- `.env.example` – Example environment variables
+- `README.md` – Project documentation
 
-Request and response validation is handled using Pydantic schemas.
-All incoming request data is validated before processing, ensuring required fields are present and correctly typed.
+---
 
-Response schemas ensure consistent API responses.
-Invalid inputs automatically return appropriate 422 Unprocessable Entity errors.
+## Database Design
+A single `tasks` table is used to store:
+- Task details (title, description)
+- GitHub repository name
+- Repository star count
+- Repository description
 
-External API Design
+A simple schema was chosen to keep the design minimal and efficient for the use case.
 
-The GitHub REST API is used to fetch repository metadata such as star count and description.
+---
 
-No authentication is used (public GitHub API)
+## Validation Logic
+All request and response validation is handled using **Pydantic** schemas.
 
-Asynchronous HTTP requests are made using httpx
+- Required fields are enforced
+- Invalid data types automatically return `422 Unprocessable Entity`
+- Response schemas ensure consistent API responses
 
-External API failures are handled gracefully without breaking database integrity
+---
 
-Timeouts and unexpected responses are managed via exception handling
+## External API Design
+The GitHub REST API is used to fetch repository metadata.
 
-Solution Approach (Data Flow)
+- Public GitHub API (no authentication required)
+- Asynchronous HTTP requests using `httpx`
+- External API failures are handled gracefully
+- Errors do not affect database consistency
 
-POST /tasks
+---
 
-Validate request payload using Pydantic
+## Solution Approach (Data Flow)
 
-Call GitHub API to fetch repository details
+### POST /tasks
+1. Validate request payload using Pydantic
+2. Call GitHub API to fetch repository details
+3. Enrich task data with GitHub metadata
+4. Store the task in PostgreSQL
+5. Return the created task as response
 
-Enrich task data with GitHub metadata
+### GET /tasks/{id}
+- Fetch the task from database and return it
 
-Store the task in PostgreSQL
+### PUT /tasks/{id}
+- Update task fields and persist changes in database
 
-Return the stored task as response
+### DELETE /tasks/{id}
+- Remove the task from database
 
-GET /tasks/{id}
+---
 
-Fetch task from database and return it
+## Error Handling Strategy
+- Global FastAPI exception handler is implemented
+- Database and external API failures are handled gracefully
+- Appropriate HTTP status codes are returned
+- Internal errors are not exposed to clients
 
-PUT /tasks/{id}
+---
 
-Update task fields and persist changes in database
+## How to Run the Project
 
-DELETE /tasks/{id}
+### Setup
+1. Install dependencies:
+   ```bash
+   python -m pip install -r requirements.txt
 
-Remove task from database
+2.Ensure PostgreSQL is running and the database exists.
+
+3.Start the server:
+
+python -m uvicorn app.main:app --reload
+
+
+4.Open Swagger documentation:
+
+http://127.0.0.1:8000/docs
 
 Environment Variables
 
-The project uses environment variables for configuration.
-
-An example file is provided as .env.example containing:
+An example environment configuration is provided in .env.example.
 
 DATABASE_URL
 
 GITHUB_API_BASE
 
 No real credentials are committed to the repository.
+
+### Testing
+
+Tests are implemented using Pytest.
+
+### Notes
+
+Docker was not used as it was optional.
+The focus was placed on correctness, validation, testing, and documentation clarity.
+
+Run all tests:
+
+pytest -q
