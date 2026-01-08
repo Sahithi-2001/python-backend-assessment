@@ -126,7 +126,7 @@ The GitHub REST API is used to fetch repository metadata.
 ## How to Run the Project
 
 ### Setup
-1.Install dependencies:
+1. Install dependencies:
    ```bash
    python -m pip install -r requirements.txt
 
